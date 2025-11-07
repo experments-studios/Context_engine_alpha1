@@ -2,11 +2,10 @@ class SoundEngine {
     constructor() {
         this.audioContext = null;
         this.soundCache = {};
-        this.activeSounds = {}; 
+        this.activeSounds = {};
 
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) {
-            console.error("Error: Your browser does not support the Web Audio API.");
         }
         this.AudioContextConstructor = AudioContext;
     }
@@ -14,12 +13,10 @@ class SoundEngine {
     initContext() {
         if (this.audioContext === null) {
             this.audioContext = new this.AudioContextConstructor();
-            console.log("AudioContext Created.");
         }
         
         if (this.audioContext.state === 'suspended') {
             this.audioContext.resume().then(() => {
-                console.log("AudioContext resumed.");
             });
         }
     }
@@ -43,27 +40,23 @@ class SoundEngine {
             const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
             
             this.soundCache[url] = audioBuffer;
-            console.log(`Sound loaded and decoded: ${url}`);
             return audioBuffer;
 
         } catch (error) {
-            console.error(`Error loading or decoding sound: ${url}`, error);
-            throw error; 
+            throw error;
         }
     }
 
     async sound(url, loop = false, volume = 1.0, id = url) {
         if (!this.audioContext) {
-            console.error("Cannot play sound: AudioContext not initialized. Call 'initContext()'.");
             return;
         }
 
         if (this.activeSounds[id] && !loop) {
-            this.stop(id); 
+            this.stop(id);
         }
         
         if (this.activeSounds[id] && this.activeSounds[id].paused && loop) {
-             console.warn(`Sound ${id} is already paused. Resuming automatically...`);
              this.resume(id);
              return id;
         }
@@ -76,19 +69,18 @@ class SoundEngine {
                 buffer: buffer,
                 sourceNode: null,
                 gainNode: null,
-                startTime: 0, 
-                startOffset: 0, 
+                startTime: 0,
+                startOffset: 0,
                 paused: false,
                 volume: volume,
                 loop: loop
             };
             
-            this._startSound(id); 
+            this._startSound(id);
 
-            return id; 
+            return id;
 
         } catch (e) {
-            console.error(`Error in 'sound()' command for: ${url}`, e);
         }
     }
     
@@ -113,7 +105,6 @@ class SoundEngine {
         source.onended = () => {
             if (!source.loop) {
                 delete this.activeSounds[id];
-                console.log(`Sound finished and cleaned up: ${id}`);
             }
         };
 
@@ -123,32 +114,28 @@ class SoundEngine {
         soundObj.startOffset = offset;
         soundObj.paused = false;
 
-        source.start(0, offset); 
-        console.log(`Sound started/resumed: ${id} (${offset.toFixed(2)}s)`);
+        source.start(0, offset);
     }
 
 
     pause(id) {
         const soundObj = this.activeSounds[id];
         if (!soundObj || soundObj.paused) {
-            console.warn(`Sound ${id} not found or already paused.`);
             return false;
         }
 
         const elapsed = this.audioContext.currentTime - soundObj.startTime;
-        soundObj.startOffset += elapsed; 
+        soundObj.startOffset += elapsed;
         
         soundObj.sourceNode.stop();
         soundObj.paused = true;
         
-        console.log(`Sound paused: ${id} (Offset saved: ${soundObj.startOffset.toFixed(2)}s)`);
         return true;
     }
 
     resume(id) {
         const soundObj = this.activeSounds[id];
         if (!soundObj || !soundObj.paused) {
-            console.warn(`Sound ${id} not found or already playing/finished.`);
             return false;
         }
         
@@ -162,15 +149,14 @@ class SoundEngine {
         
         if (soundObj.sourceNode) {
              try {
-                soundObj.sourceNode.stop(0);
-                soundObj.sourceNode.disconnect(); 
-            } catch (e) {
-            }
+                 soundObj.sourceNode.stop(0);
+                 soundObj.sourceNode.disconnect();
+             } catch (e) {
+             }
         }
         
-        delete this.activeSounds[id]; 
+        delete this.activeSounds[id];
         
-        console.log(`Sound completely stopped and cleaned up: ${id}`);
         return true;
     }
 }
